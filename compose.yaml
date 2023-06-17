@@ -1,0 +1,48 @@
+version: "3.9"
+services:
+  redis:
+    image: 'redislabs/redismod'
+    ports:
+      - '6379:6379'
+  web1:
+    restart: on-failure
+    build: ./web
+    hostname: web1
+    ports:
+      - '81:5000'
+  web2:
+    restart: on-failure
+    build: ./web
+    hostname: web2
+    ports:
+      - '82:5000'
+  nginx:
+    build: ./nginx
+    ports:
+    - '80:80'
+    depends_on:
+    - web1
+    - web2
+  app1:
+    container_name: app1
+    image: redhat/ubi9
+    command: sleep infinity
+    environment:
+      - CONTAINER_NAME=app1
+      - CONTAINER_MSG=outbount traffic blocked
+    networks:
+      - no-internet
+  app2:
+    container_name: app2
+    image: redhat/ubi9
+    command: sleep infinity
+    environment:
+      - CONTAINER_NAME=app2
+      - CONTAINER_MSG=outbount traffic allowed
+    networks:
+      - internet
+
+networks:
+  internet: {}
+  no-internet:
+    internal: true
